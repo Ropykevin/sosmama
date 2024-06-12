@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SOS-MAMAS-Expectant Patient List.</title>
+  <link rel="icon" href="../static/icon3.png" type="image/png" sizes="16x16">
+  <link rel="stylesheet" href="/static/css/">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+    integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+  <!-- jQuery and JS bundle w/ Popper.js -  Interactivity-->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,500&family=Varela+Round&display=swap"
+    rel="stylesheet">
+  <style>
+    /* The sidebar menu */
+    .sidenav {
+      height: 600%;
+      /* Full-height: remove this if you want "auto" height */
+      width: 200px;
+      /* Set the width of the sidebar */
+      position: absolute;
+      /* Fixed Sidebar (stay in place on scroll) */
+      z-index: 1;
+      /* Stay on top */
+      top: 0;
+      /* Stay at the top */
+      left: 0;
+      background-color: #000000;
+      /* Black */
+      overflow-x: hidden;
+      /* Disable horizontal scroll */
+      padding-top: 20px;
+    }
+
+    /* The navigation menu links */
+    .sidenav a {
+      padding: 6px 8px 6px 16px;
+      text-decoration: none;
+      font-size: 25px;
+      color: #818181;
+      display: block;
+    }
+
+    /* When you mouse over the navigation links, change their color */
+    .sidenav a:hover {
+      color: #f1f1f1;
+    }
+
+    /* Style page content */
+    .main {
+      margin-left: 200px;
+      /* Same as the width of the sidebar */
+      padding: 0px 10px;
+    }
+
+    /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+    @media screen and (max-height: 450px) {
+      .sidenav {
+        padding-top: 15px;
+      }
+
+      .sidenav a {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="navbar fixed-top" style="background: #1E90FF; color: white;padding: 1%;" id="header">
+    <div class="col-md-10">
+      <a href="/index" class="text-white" style="text-decoration:none;">
+        <b style="font-size:30px; font-size:30px; font-family: 'Varela Round', sans-serif;">SOS MAMAS </b>
+      </a>
+      <i style="font-family: 'Dancing Script', cursive;">Remote Home Monitoring for Mothers</i>
+      <!--           <b style="font-size:30px; font-family: 'Varela Round', sans-serif;">SOS MAMAS </b>  <i style="font-family: 'Dancing Script', cursive;">Remote home Monitoring for Mothers</i>-->
+    </div>
+
+    <div class="col-md-1" style="color: white; padding: 1%;">
+      <a href="/logout" style="color: white;">Log out <i class="fa fa-user-circle-o" aria-hidden="true"></i></a>
+    </div>
+    <div class="col-md-1" style="color: white; padding: 1%;">
+      <a href="/index" style="color: white; font-family: 'Varela Round', sans-serif; "><i class="fa fa-home"
+          aria-hidden="true"></i></a>
+    </div>
+  </div>
+  <br><br><br>
+
+  <div class="sidenav text-center">
+    <br><br><br><br>
+    <img src="../static/greatdoc.jpg" alt="" style=width:70%;>
+    <br>
+    <h6 class="text-white">DR. {{doctor[1]}}</h6>
+    <p class="text-white">Consultant Obstetrician & Gynecologist</p><br>
+    <h6><a href="/view_profile" class="btn btn-primary"
+        style="font-size: 12px;color: white;font-family: 'Varela Round', sans-serif; width: 80%; margin-left:10%;margin-right:10%;">My
+        Profile</a></h6>
+    <br>
+    <h6><a href="/change_profile" class="btn btn-primary"
+        style="font-size: 12px;color: white; font-family: 'Varela Round', sans-serif; width: 80%; margin-left:10%;margin-right:10%;">Change
+        Details</a></h6>
+  </div>
+
+
+
+  <div class="main">
+    <br>
+
+    <div class="text-right" style="margin-right:2%; font-family: 'Varela Round', sans-serif;">
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+        Enrol Patient
+      </button>
+  
+      <a href="/predict" class="btn btn-primary">Prediction</a>
+      <!--        <a href="/index"><i class="fa fa-home" aria-hidden="true"></i></a>-->
+      <a href="/patients"><i class="fa fa-refresh" aria-hidden="true"></i></a>
+    </div>
+    <h3 style="font-family: 'Varela Round', sans-serif;">EXPECTANT PATIENT LIST</h3>
+    <div class="row">
+      <div class="col-md-8">
+        {{msg}} <br>
+        <form action="/patients" method="post">
+          <input type="text" name="phone" placeholder="Search Phone Number" class="form-control"><br>
+          <input type="submit" class="btn btn-primary" style="font-family: 'Varela Round', sans-serif;" value="Search">
+        </form>
+
+      </div>
+    </div>
+
+    <br>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}" role="alert"> {{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <section class="container">
+      <table class="table table-striped">
+        <tr>
+          <td style="font-family: 'Varela Round', sans-serif;">Edit</td>
+          <th style="font-family: 'Varela Round', sans-serif;">ID</th>
+          <th style="font-family: 'Varela Round', sans-serif;">F.Name</th>
+          <th style="font-family: 'Varela Round', sans-serif;">Last Name</th>
+          <th style="font-family: 'Varela Round', sans-serif;">Email</th>
+          <th style="font-family: 'Varela Round', sans-serif;">Telephone</th>
+          <th style="font-family: 'Varela Round', sans-serif;">Sub-County</th>
+          <th style="font-family: 'Varela Round', sans-serif;">County</th>
+          <th colspan="3" class="text-center" style="font-family: 'Varela Round', sans-serif;">Actions</th>
+        </tr>
+        {% for row in rows %}
+        <tr>
+          <td><a href="/retrieve_patient_to_update/{{row[0]}}"><i class="fa fa-pencil-square-o"
+                aria-hidden="true"></i></a></td>
+          <td>{{row[0]}}</td>
+          <td>{{row[2]}}</td>
+          <td>{{row[3]}}</td>
+          <td>{{row[4]}}</td>
+          <td>{{row[5]}}</td>
+          <td>{{row[10]}}</td>
+          <td>{{row[11]}}</td>
+
+          <td><a href="/test/{{row[0]}}" class="btn btn-primary"
+              style="font-family: 'Varela Round', sans-serif;">Test</a></td>
+          <td><a href="/individual_analysis/{{row[0]}}" class="btn btn-primary"
+              style="font-family: 'Varela Round', sans-serif;">Records</a></td>
+
+        </tr>
+        {% endfor %}
+      </table>
+      <br><br>
+      <hr>
+    </section>
+  </div>
+
+
+  <!-- The Modal -->
+  <div class="modal" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title text-primary col text-center" style="font-family: 'Varela Round', sans-serif;">ENROLL
+            EXPECTANT MOTHER</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body" style="border-radius:10px; background:#E0E0E0; padding:2%;">
+          <form action="/add" method="post" class="form-inline">
+            <div class="row">
+              <div class="col-md-12">
+                <input type="text" name="fname" placeholder="First Name" required class="form-control">
+                <input type="text" name="lname" placeholder="Last Name" required class="form-control"><br><br>
+                <input type="text" name="email" placeholder="Email" required class="form-control">
+                <input type="text" name="phone" placeholder="Phone" required class="form-control"> <br><br>
+                <input type="text" name="id_number" placeholder="ID Number" required class="form-control">
+                <input type="text" name="subcounty" placeholder="Sub-County" required class="form-control"><br><br>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <b style="font-family: 'Varela Round', sans-serif;">Select County:</b>
+                <select name="county" id="">
+                  <option value="Nairobi">Nairobi</option>
+                  <option value="Nakuru">Nakuru</option>
+                  <option value="Mombasa">Mombasa</option>
+                  <option value="Kwale">Kwale</option>
+                  <option value="Kilifi">Kilifi</option>
+                  <option value="Lamu">Lamu</option>
+                  <option value="Taita">Taita/ Taveta</option>
+                  <option value="Garissa">Garissa</option>
+                  <option value="Wajir">Wajir</option>
+                  <option value="Mandera">Mandera</option>
+                  <option value="Marsabit">Marsabit</option>
+                  <option value="Isiolo">Isiolo</option>
+                  <option value="Meru">Meru</option>
+                  <option value="Tharakanithi">Tharaka-Nithi</option>
+                  <option value="Embu">Embu</option>
+                  <option value="Kitui">Kitui</option>
+                  <option value="Machakos">Machakos</option>
+                  <option value="Makueni">Makueni</option>
+                  <option value="Nyandarua">Nyandarua</option>
+                  <option value="Nyeri">Nyeri</option>
+                  <option value="Kirinyaga">Kirinyaga</option>
+                  <option value="Muranga">Murang'a</option>
+                  <option value="Kiambu">Kiambu</option>
+                  <option value="Turkana">Turkana</option>
+                  <option value="Pokot">West Pokot</option>
+                  <option value="Samburu">Samburu</option>
+                  <option value="Transnzoia">Trans Nzoia</option>
+                  <option value="Uasin">Uasin Gishu</option>
+                  <option value="Elgeyo">Elgeyo Marakwet</option>
+                  <option value="Nandi">Nandi</option>
+                  <option value="Baringo">Baringo</option>
+                  <option value="Laikipia">Laikipia</option>
+                  <option value="Narok">Narok</option>
+                  <option value="Kajiado">Kajiado</option>
+                  <option value="Kericho">Kericho</option>
+                  <option value="Bomet">Bomet</option>
+                  <option value="Kakamega">Kakamega</option>
+                  <option value="Vihiga">Vihiga</option>
+                  <option value="Bungoma">Bungoma</option>
+                  <option value="Busia">Busia</option>
+                  <option value="Siaya">Siaya</option>
+                  <option value="Kisumu">Kisumu</option>
+                  <option value="Homabay">HomaBay</option>
+                  <option value="Migori">Migori</option>
+                  <option value="Kisii">Kisii</option>
+                  <option value="Nyamira">Nyamira</option>
+                </select>
+                <br><br>
+
+
+                <b style="font-family: 'Varela Round', sans-serif;">Date of Birth:</b><br>
+                <input type="date" name="dob" placeholder="Next Of Kin Name" required class="form-control"
+                  max="2002-12-30">
+                <br><br>
+              </div>
+            </div>
+
+
+
+
+            <div class="row">
+              <div class="col-md-12">
+                <input type="text" name="next_of_kin_name" placeholder="Next Of Kin Name" required class="form-control">
+                <input type="text" name="next_of_kin_phone" placeholder="Next Of Kin Phone" required
+                  class="form-control"><br><br>
+              </div>
+            </div>
+
+
+            <div class="row">
+              <div class="col-md-12">
+                <input type="submit" value="Add Patient" class="btn btn-primary col text-center form-control"
+                  style="font-family: 'Varela Round', sans-serif;">
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+
+
+</body>
+
+</html>

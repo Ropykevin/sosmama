@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SOS-MAMAS-Remote Patient Monitoring solution for doctors.</title>
+    <link rel="icon" href="../static/icon3.png" type="image/png" sizes="16x16">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+<!-- jQuery and JS bundle w/ Popper.js -  Interactivity-->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,500&family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        /* The sidebar menu */
+.sidenav {
+  height: 100%; /* Full-height: remove this if you want "auto" height */
+  width: 200px; /* Set the width of the sidebar */
+  position: absolute; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 0; /* Stay at the top */
+  left: 0;
+  background-color: #111; /* Black */
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 20px;
+}
+
+/* The navigation menu links */
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+/* Style page content */
+.main {
+  margin-left: 200px; /* Same as the width of the sidebar */
+  padding: 0px 10px;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+
+#button{
+   color:white;
+   background-color: #304FFE;
+   padding:1%;
+   width:15em;
+   display: inline-block;
+   border-radius:25px;
+}
+
+#button:hover{
+   color:white;
+   background-color: #3D5AFE;
+   padding:1%;
+   width:15em;
+   display: inline-block;
+}
+    </style>
+</head>
+<body>
+
+<div class="navbar fixed-top" style="background: #1E90FF; color: white;padding: 1%;" id="header">
+     <div  class="col-md-10">
+           <b style="font-size:30px; font-family: 'Varela Round', sans-serif;">SOS MAMAS </b>  <i style="font-family: 'Dancing Script', cursive;">Remote Home Monitoring for Mothers</i>
+     </div>
+
+      <div class="col-md-2" style="color: white; padding: 1%;">
+          <a href="/login" style="color: white;">Log in <i class="fa fa-user-circle-o" aria-hidden="true"></i></a>
+      </div>
+</div>
+<br><br><br>
+ <section class="row" style="padding:1%;" >
+      <div class="col-md-4">
+          <br>
+            <h1 style="font-family: 'Varela Round', sans-serif; font-size:55px;">Remote Expectant Patient Monitoring Made Easy</h1><br>
+            <p class="text-muted" style="font-family: 'Varela Round', sans-serif; color: black;">SOS MAMAS offers flexibility, easy monitoring and analytics for pregnant mothers through our web and mobile platforms.</p>
+          <br><br>
+      </div>
+
+       <div class="col-md-8">
+           <img src="https://assets.clevelandclinic.org/transform/c5036c8f-5338-4bdb-9780-cb6ac0a6cfe3/pregnant-person-glow-1427728822_967x544_jpg" alt="" class="img-fluid" style="height:400px;" width="100%">
+
+      </div>
+ </section>
+
+<section class="row">
+      <div class="col-md-2 text-white" style="background-color:#304FFE;padding:1%;">
+         <h6 style="margin-left: 2%;">Register</h6>
+         <ul>
+             <li>Doctor Account.</li>
+             <li>Patient Account.</li>
+             <li>Get SMS confirmation from doctor.</li>
+             <li>Get SMS verification with details to login to the app for patient.</li>
+         </ul>
+      </div>
+
+      <div class="col-md-2 text-white" style="background-color:#1E90FF;padding:1%;">
+          <h6>Monitoring</h6>
+         <ul>
+             <li>Patient Records.</li>
+             <li>Health Data is displayed for doctors to view and analyze.</li>
+             <li>Week of Pregnancy.</li>
+         </ul>
+          <h6>Classification</h6>
+          <ul>
+             <li>Automatic BP classification.</li>
+             <li>Automatic Temperature classification.</li>
+             <li>BMI classification.</li>
+         </ul>
+      </div>
+
+       <div class="col-md-2 text-white" style="background-color:#304FFE;padding:1%;">
+         <h6>Data Analytics</h6>
+         <ul>
+             <li>Overall Patient Analytics.</li>
+             <li>Health Data Analytics.</li>
+             <li>Medication Analytics.</li>
+         </ul>
+           <h6>Mobile Platform</h6>
+         <ul>
+             <li>Call or Message the doctor. </li>
+             <li>Remote healthcare at the palm of your hands.</li>
+         </ul>
+      </div>
+
+        <div class="col-md-2 text-white" style="background-color:#1E90FF; padding:1%;">
+          <h6>Medication</h6>
+         <ul>
+             <li>Send prescriptions to your Expectant Patients.</li>
+             <li>Prescriptions Analysis per patient and overall.</li>
+             <li>Alert Patient via SMS.</li>
+         </ul>
+         <h6>Tests</h6>
+         <ul>
+             <li>Blood pressure</li>
+             <li>BMI</li>
+             <li>Heart Rate level</li>
+             <li>Temperature</li>
+         </ul>
+      </div>
+
+
+   <div class="col-md-2 text-white" style="background-color:#304FFE;padding:1%;">
+         <h6>SMS Alerts</h6>
+         <ul>
+             <li>Get alerts whenever a patient reports hypertension.</li>
+             <li>Send alerts to patients to check prescription.</li>
+         </ul>
+         <h6>Machine Learning: Prediction</h6>
+         <ul>
+             <li>Early detection of Hypertension in pregnancy based on machine learning approach.</li>
+
+         </ul>
+      </div>
+
+    <div class="col-md-2 text-white" style="background-color:#1E90FF;padding:1%;">
+        <h6>Doctors: Web Platform</h6>
+             <p>Our SOS MAMAS  web platform for remote health monitoring and health data analytics of your patients.</p>
+
+        <h6>Expectant Patient</h6>
+         <ul>
+             <li>Our SOS MAMAS mobile platform to self monitor.</li>
+             <li>Get Medication.</li>
+             <li>Send health records remotely.</li>
+         </ul>
+      </div>
+</section>
+
+
+<section class="row">
+    <div class="col-md-12 text-white">
+          <img src="https://img.freepik.com/premium-vector/62_391020-322.jpg?w=740" alt="" class="img-fluid" style="height:400px;" width="100%">
+    </div>
+    <br><br><br>
+
+        <h4 style="font-family: 'Varela Round', sans-serif;" class="col-md-12 text-black text-center">OUR STAKEHOLDERS</h4>
+    <br><br>
+    <div class="col-md-2" style="text-align: center">
+        <img src="../static/minhealth.png" alt="" width="30%">
+        <p class="text-center" style="font-family: 'Varela Round', sans-serif;">The Ministry of Health.</p>
+    </div>
+    <div class="col-md-2" style="text-align: center">
+        <img src="../static/minhealth.png" alt="" width="30%">
+        <p style="font-family: 'Varela Round', sans-serif;">The Government and County Governments.</p>
+    </div>
+    <div class="col-md-2" style="text-align: center">
+        <img src="../static/who.png" alt="" width="30%">
+        <p style="font-family: 'Varela Round', sans-serif;">The World Health Organization.</p>
+    </div>
+    <div class="col-md-2" style="text-align: center">
+        <img src="../static/hosi.png" alt="" width="30%">
+        <p class="text-center" style="font-family: 'Varela Round', sans-serif;">Public and Private Hospitals.</p>
+    </div>
+    <div class="col-md-2" style="text-align: center">
+        <img src="../static/poli.png" alt="" width="30%">
+        <p class="text-center" style="font-family: 'Varela Round', sans-serif;">Policy Makers.</p>
+    </div>
+    <div class="col-md-2" style="text-align: center">
+        <img src="../static/kma.jpg" alt="" width="30%">
+        <p class="text-center" style="font-family: 'Varela Round', sans-serif;">Kenya Medical Association.</p>
+    </div>
+    
+
+<!--   <div class="col-md-2 text-white" style="background-color:#1E90FF;padding:1%;">-->
+<!--         <h6>Expectant Patient</h6>-->
+<!--         <ul>-->
+<!--             <li>Our SOS MAMAS mobile platform to self monitor.</li>-->
+<!--             <li>Get Medication.</li>-->
+<!--             <li>Send health records remotely.</li>-->
+<!--             <li>Track your health for well-being of you and baby.</li>-->
+<!--         </ul>-->
+<!--      </div>-->
+
+<!--    <div class="col-md-2 text-white" style="background-color:#304FFE;padding:1%;">-->
+<!--        <h6>Mobile Platform</h6>-->
+<!--         <ul>-->
+<!--             <li>Call or Message the doctor. </li>-->
+<!--             <li>Remote healthcare at the palm of your hands.</li>-->
+<!--         </ul>-->
+<!--      </div>-->
+</section>
+<br><br>
+<hr>
+<br>
+<section  class="col-md-12 text-black text-center">
+    <h1 style="font-family: 'Varela Round', sans-serif;">USE REMOTE MONITORING TO IMPROVE CLINICAL WORKFLOW EFFICIENCIES</h1>
+</section>
+<br><br>
+<section class="row" style="margin-left:5%;margin-right:10%;">
+   <div class="col-md-6">
+       <br><br><br>
+       <p style="font-family: 'Varela Round', sans-serif;" class="text-center text-muted">
+           We designed SOS-MAMAS to enable care providers to easily deliver remote, continuous, value-based care. SOSMAMAS provides comprehensive, accurate, timely and actionable data. The intuitive interface is easy to learn, so you can make faster decisions and successful interventions.
+           Expectant mothers take measurements such as blood pressure, weight, heart rate, height and temperature at home. Enroll your patients today with a click of a button we handle the rest.
+       </p>
+   </div>
+    <div class="col-md-6">
+        <img src="https://www.usatoday.com/gcdn/-mm-/1fecae5856e58374cc9e1c0fd6dcc3c6aae79d4e/c=0-293-5760-3547/local/-/media/2017/08/18/USATODAY/USATODAY/636386396257636975-GettyImages-474198458.jpg?width=660&height=373&fit=crop&format=pjpg&auto=webp" alt="" class="img-fluid" style="height:300px; width:100%">
+
+    </div>
+</section>
+<br>
+<hr>
+<br><br><br>
+<section class="row" style="margin-left:10%;margin-right:10%;">
+    <br>
+        <div class="col-md-3" style="text-align: center">
+            <img src="../static/icon2.png" alt="" width="25%">
+            <p style="font-family: 'Varela Round', sans-serif;">Increase capacity by reducing unnecessary visits.</p>
+        </div>
+        <div class="col-md-3" style="text-align: center">
+            <img src="../static/icon3.png" alt="" width="20%">
+            <p style="font-family: 'Varela Round', sans-serif;">Save staff time and help them work more efficiently</p>
+        </div>
+        <div class="col-md-3" style="text-align: center">
+            <img src="../static/icon1.png" alt="" width="20%">
+            <p class="text-center" style="font-family: 'Varela Round', sans-serif;">Better care,
+healthier Mothers</p>
+        </div>
+        <div class="col-md-3" style="text-align: center">
+            <img src="../static/icon4.png" alt="" width="25%">
+            <p class="text-center" style="font-family: 'Varela Round', sans-serif;">Look after your most vulnerable expectant mothers where they are safest - at home.</p>
+        </div>
+
+</section>
+<br><br><br>
+<section class="row">
+      <div class="col-md-12 text-center">
+          <a href="/signup" class="btn btn-primary" id="button">Get Started Here</a>
+      </div>
+</section>
+<br>
+<footer>
+      <h5 style="background:  #000000; color: white;padding: 1%; font-family: 'Varela Round', sans-serif;margin-bottom: 0%;">SOSMAMAS - <i style="font-family: 'Dancing Script', cursive;">Remote Home Monitoring for Mothers</i></h5>
+</footer>
+</body>
+</html>

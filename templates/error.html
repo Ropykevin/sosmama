@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>error</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="alert alert-info">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+    <div class="navbar fixed-top" style="background: #1E90FF; color: white;padding: 1%;" id="header">
+        <div class="col-md-10">
+            <a href="/patients" class="text-white" style="text-decoration:none;">
+                <b style="font-size:30px; font-family: 'Varela Round', sans-serif;">SOS MAMAS </b>
+            </a>
+            <i style="font-family: 'Dancing Script', cursive;">Remote Home Monitoring for Mothers</i>
+        </div>
+
+        <div class="col-md-2" style="color: white; padding: 1%;">
+            <a href="/logout" style="color: white; font-family: 'Varela Round', sans-serif;">Log out <i
+                    class="fa fa-user-circle-o" aria-hidden="true"></i></a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="text-right" style="margin-right:2%; font-family: 'Varela Round', sans-serif;">
+
+            <div class="text-right" style="margin-right:2%;">
+                <td><a href="/patients" class="btn btn-primary" style="font-family: 'Varela Round', sans-serif;">Patient
+                        List</a>
+                </td>
+
+            </div> <!--        <a href="/index"><i class="fa fa-home" aria-hidden="true"></i></a>-->
+            <a href="/patients"><i class="fa fa-refresh" aria-hidden="true"></i></a>
+        </div>
+        <div class="mt-5">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">An Error Occurred</h4>
+                <p>Sorry, something went wrong. Please try again later.</p>
+                <hr>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
