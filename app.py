@@ -333,22 +333,23 @@ def update_patient():
         next_of_kin_phone = request.form['next_of_kin_phone']
         subcounty = request.form['subcounty']
 
-        # connect to localhost and db
-
-        # insert the records into the doctors tables
+        conn = get_db_connection()
         cursor = conn.cursor()
         try:
-            sql = "UPDATE `patients`  SET `fname` = %s,  `lname` = %s,  `email` = %s, `phone` = %s, " \
-                  "`next_of_kin_name`=%s, `next_of_kin_phone`=%s,`subcounty`= %s  where patient_id = %s "
-            cursor.execute(sql,
-                           (fname, lname, email, phone, next_of_kin_name, next_of_kin_phone, subcounty, patient_id))
+            cursor.execute('''
+                UPDATE patients 
+                SET fname = ?, lname = ?, email = ?, phone = ?,
+                    next_of_kin_name = ?, next_of_kin_phone = ?, subcounty = ?
+                WHERE id = ?
+            ''', (fname, lname, email, phone, next_of_kin_name, next_of_kin_phone, subcounty, patient_id))
             conn.commit()
             flash('Update Successful', 'success')
             return redirect(url_for('patients'))
-
-        except:
+        except sqlite3.Error as e:
             flash('Update Failed, Please Try Again.', 'danger')
-            return redirect(url_for('patients'))
+            conn.rollback()
+        finally:
+            conn.close()
     else:
         flash('Click the edit icon to update patient record.', 'info')
         return redirect(url_for('patients'))
@@ -361,18 +362,18 @@ def test(patient_id):
         return redirect(url_for('login'))
 
     u_email = session['key']
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-    # Fetch doctor information
     try:
-        query = "SELECT * FROM users WHERE email = %s"
-        cursor.execute(query, (u_email,))
+        cursor.execute('SELECT * FROM users WHERE email = ?', (u_email,))
         doctor = cursor.fetchone()
-        print(doctor[1])  # Debugging purposes
-
     except sqlite3.Error as e:
         flash('An error occurred while fetching doctor information.', 'danger')
         print("Error fetching doctor information:", e)
         return render_template('error.html')
+    finally:
+        conn.close()
 
     return render_template('add_healthresults.html', patient_id=patient_id, doctor=doctor)
 
@@ -387,80 +388,74 @@ def add_healthresults():
         temperature = request.form['temperature']
         systolic = request.form['systolic']
         diastolic = request.form['diastolic']
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
         try:
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO tests(patient_id, weight, height, heart_rate, temperature, systolic, diastolic) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                (patient_id, weight, height, heart_rate, temperature, systolic, diastolic,))
+            cursor.execute('''
+                INSERT INTO tests (patient_id, weight, height, heart_rate, temperature, systolic, diastolic)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (patient_id, weight, height, heart_rate, temperature, systolic, diastolic))
             conn.commit()
             flash('Record Saved Successfully.', 'success')
             return redirect(url_for('patients'))
         except sqlite3.Error as e:
             flash(f'An Error Occurred During Recording. {e}', 'danger')
-            print(e)
             conn.rollback()
-            print("Error:", e)
-            return redirect(url_for('patients'))
+        finally:
+            conn.close()
     else:
         return render_template('add_healthresults.html')
 
 
 @app.route('/individual_analysis/<id>')
 def individual_analysis(id):
-    cursor = conn.cursor()
     if 'key' not in session:
         flash('Please log in to access this page.', 'info')
         return redirect(url_for('login'))
 
     u_email = session['key']
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-    # Fetch doctor information
     try:
-        query = "SELECT * FROM users WHERE email = %s"
-        cursor.execute(query, (u_email,))
+        cursor.execute('SELECT * FROM users WHERE email = ?', (u_email,))
         doctor = cursor.fetchone()
-        print(doctor[1])  # Debugging purposes
-
-    except sqlite3.Error as e:
-        flash('An error occurred while fetching doctor information.', 'danger')
-        print("Error fetching doctor information:", e)
-        return render_template('error.html')
-    if id == "":
-        return redirect('/patients')
-    else:
-        cursor = conn.cursor()
-        cursor.execute("Select * from patients where id = %s", (id,))
+        
+        if id == "":
+            return redirect('/patients')
+            
+        cursor.execute('SELECT * FROM patients WHERE id = ?', (id,))
         row_details = cursor.fetchone()
-
-        cursor.execute(
-            "Select * from tests where patient_id = %s order by test_date ASC", (id,))
+        
+        cursor.execute('SELECT * FROM tests WHERE patient_id = ? ORDER BY test_date ASC', (id,))
         rows = cursor.fetchall()
 
         if not rows:
             flash('No Records for this patient.', 'warning')
             return redirect(url_for('patients'))
-        else:
-            sns.set_style('dark')
-            plt.figure(figsize=(10, 6))
+            
+        sns.set_style('dark')
+        plt.figure(figsize=(10, 6))
 
-            # Convert fetched data to DataFrame for analysis
-            data = pd.DataFrame(rows, columns=['id', 'patient_id', 'weight', 'height',
-                                'heart_rate', 'temperature', 'systolic', 'diastolic', 'created_date'])
-            data['created_date'] = pd.to_datetime(data['created_date'])
+        data = pd.DataFrame(rows, columns=['id', 'patient_id', 'weight', 'height',
+                            'heart_rate', 'temperature', 'systolic', 'diastolic', 'created_date'])
+        data['created_date'] = pd.to_datetime(data['created_date'])
 
-            # Perform data analysis and generate plots
-            patterns = data[['temperature', 'created_date']]
-            patterns = patterns.set_index('created_date')
-            patterns.resample('ME').mean().plot(
-                title='ANALYSIS OF TEMPERATURE')
-            plt.xlabel("Month")
-            plt.ylabel("Temperature in Degrees")
-            plt.savefig("static/temp.png")
-            plt.close()
+        patterns = data[['temperature', 'created_date']]
+        patterns = patterns.set_index('created_date')
+        patterns.resample('ME').mean().plot(title='ANALYSIS OF TEMPERATURE')
+        plt.xlabel("Month")
+        plt.ylabel("Temperature in Degrees")
+        plt.savefig("static/temp.png")
+        plt.close()
 
-            # Add similar code for other analyses (weight, heart rate, etc.)
-
-            return render_template('individual_analysis.html', rows=rows, row_details=row_details, doctor=doctor, patient_id=id)
+        return render_template('individual_analysis.html', rows=rows, row_details=row_details, doctor=doctor, patient_id=id)
+    except sqlite3.Error as e:
+        flash('An error occurred while accessing the database.', 'danger')
+        return render_template('error.html')
+    finally:
+        conn.close()
 
 
 # @app.route('/prescription/')
@@ -495,97 +490,73 @@ def individual_analysis(id):
 # view prescription by patient
 @app.route('/prescription/<patient_id>')
 def prescription(patient_id):
-    # Connect to database
-    cursor = conn.cursor()
     if 'key' not in session:
         flash('Please log in to access this page.', 'info')
         return redirect(url_for('login'))
 
     u_email = session['key']
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-    # Fetch doctor information
     try:
-        query = "SELECT * FROM users WHERE email = %s"
-        cursor.execute(query, (u_email,))
+        cursor.execute('SELECT * FROM users WHERE email = ?', (u_email,))
         doctor = cursor.fetchone()
-        print(doctor[1])  # Debugging purposes
 
-    except sqlite3.Error as e:
-        flash('An error occurred while fetching doctor information.', 'danger')
-        print("Error fetching doctor information:", e)
-        return render_template('error.html')
+        cursor.execute('SELECT * FROM patients WHERE id = ?', (patient_id,))
+        row = cursor.fetchone()
+        phone = row[5]
 
-    sql1 = "select * from patients  where id =%s"
-    cursor.execute(sql1, (patient_id))
-    row = cursor.fetchone()
-    phone = row[5]
-    print(phone)
+        cursor.execute('SELECT * FROM prescription WHERE patient_id = ? ORDER BY date_created DESC', (patient_id,))
+        if cursor.rowcount < 1:
+            flash('No prescription for this patient', 'danger')
+            return render_template('prescription.html', patient_id=patient_id, token=1)
 
-    # execute the query using the cursor
-    sql = "select * from prescription  where patient_id = %s order by date_created desc"
-    cursor.execute(sql, (patient_id))
-    # check if no records were found
-    if cursor.rowcount < 1:
-        flash('No prescription for this patient', 'danger')
-        return render_template('prescription.html', patient_id=patient_id, token=1)
-    else:
-        # return all rows found
-        # Search
-        import pandas
-        data = pandas.read_sql("select * from prescription where patient_id = %(id)s", conn,
-                               parse_dates=['date_created'],
-                               params={"id": patient_id})
-        print('here', data)
-        import matplotlib.pyplot as plt
-        if data.empty:
-            print('DataFrame is empty!')
-
+        data = pd.read_sql('SELECT * FROM prescription WHERE patient_id = ?', conn, params={"id": patient_id}, parse_dates=['date_created'])
+        
+        # Generate plots
         plt.style.use('ggplot')
-
-        x, y = plt.subplots()
-        data.groupby("medicine").size().plot(
-            kind='pie', title='PERCENTAGE OF MEDICINE GIVEN', autopct='%1.1f%%')
-        plt.xlabel("")
-        plt.ylabel("")
+        
+        # Pie chart
+        plt.figure()
+        data.groupby("medicine").size().plot(kind='pie', title='PERCENTAGE OF MEDICINE GIVEN', autopct='%1.1f%%')
         plt.savefig("static/pie.png")
+        plt.close()
 
-        from matplotlib import rcParams
-        rcParams.update({'figure.autolayout': True})
-
-        x, y = plt.subplots()
-        data.groupby("medicine")['duration'].mean().plot(
-            kind='bar', color='blue', title='MEDICINE BY DURATION')
+        # Bar chart for duration
+        plt.figure()
+        data.groupby("medicine")['duration'].mean().plot(kind='bar', color='blue', title='MEDICINE BY DURATION')
         plt.xlabel("Medicine")
         plt.ylabel("Duration - Days")
         plt.savefig("static/bar_count.png")
+        plt.close()
 
-        x, y = plt.subplots()
+        # Bar chart for medication count
+        plt.figure()
         plt.ylim(0, 10)
-        data.groupby("medicine")['medicine'].count().plot(
-            kind='bar', title='MEDICATION')
+        data.groupby("medicine")['medicine'].count().plot(kind='bar', title='MEDICATION')
         plt.xlabel("Medicine Name")
         plt.ylabel("Number of times given")
         plt.savefig("static/bar.png")
+        plt.close()
 
-        x, y = plt.subplots()
-        data = pandas.read_sql("select * from prescription where patient_id = %(id)s ", conn,
-                               parse_dates=['date_created'],
-                               params={"id": patient_id})
-
-        data['date_created'] = pandas.to_datetime(data['date_created']).dt.date
-
-        data = data.groupby(["date_created", "medicine"]).size().unstack()
-
-        data.plot(kind='bar', title='ANALYSIS OF MEDICATION GIVEN BY DATE')
+        # Bar chart for medication by date
+        plt.figure()
+        data['date_created'] = pd.to_datetime(data['date_created']).dt.date
+        data.groupby(["date_created", "medicine"]).size().unstack().plot(kind='bar', title='ANALYSIS OF MEDICATION GIVEN BY DATE')
         plt.xlabel("Date Prescribed")
         plt.ylabel("Medication Given")
         plt.legend(bbox_to_anchor=(1.1, 1.05))
         plt.savefig("static/bar_drugs.png")
+        plt.close()
 
         flash('This page automatically generates an analysis of your patients prescriptions:', 'info')
-        rows = cursor.fetchall()
-        print(patient_id)
-        return render_template('prescription.html', rows=rows, patient_id=patient_id, phone=phone,doctor=doctor)
+        return render_template('prescription.html', rows=data.to_dict('records'), patient_id=patient_id, phone=phone, doctor=doctor)
+
+    except sqlite3.Error as e:
+        flash('An error occurred while accessing the database.', 'danger')
+        return render_template('error.html')
+    finally:
+        conn.close()
 
 
 @app.route('/add_prescription', methods=['POST', 'GET'])
@@ -595,58 +566,55 @@ def add_prescription():
         return redirect(url_for('login'))
 
     u_email = session['key']
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-    # Fetch doctor information
     try:
-        cursor = conn.cursor()
-        query = "SELECT * FROM users WHERE email = %s"
-        cursor.execute(query, (u_email,))
+        cursor.execute('SELECT * FROM users WHERE email = ?', (u_email,))
         doctor = cursor.fetchone()
-        print(doctor[1])  # Debugging purposes
 
-    except sqlite3.Error as e:
-        flash('An error occurred while fetching doctor information.', 'danger')
-        print("Error fetching doctor information:", e)
-        return render_template('error.html')
+        if request.method == "POST":
+            patient_id = request.form['patient_id']
+            prescription_name = request.form['prescription_name']
+            dosage = request.form['dosage']
+            duration = request.form['duration']
 
-    if request.method == "POST":
-        patient_id = request.form['patient_id']
-        prescription_name = request.form['prescription_name']
-        dosage = request.form['dosage']
-        duration = request.form['duration']
-
-        try:
-            cursor.execute(
-                "INSERT INTO prescription (patient_id, medicine, dosage, duration) VALUES (%s, %s, %s, %s)",
-                (patient_id, prescription_name, dosage, duration))
+            cursor.execute('''
+                INSERT INTO prescription (patient_id, medicine, dosage, duration)
+                VALUES (?, ?, ?, ?)
+            ''', (patient_id, prescription_name, dosage, duration))
             conn.commit()
             flash('Prescription Saved Successfully', 'success')
             return redirect(url_for('prescription', patient_id=patient_id))
 
-        except sqlite3.Error as e:
-            flash('Error Occurred During Recording', 'danger')
-            print("Error inserting prescription:", e)
-            return redirect(url_for('patients', patient_id=patient_id))
+    except sqlite3.Error as e:
+        flash('Error Occurred During Recording', 'danger')
+        return redirect(url_for('patients'))
+    finally:
+        conn.close()
 
-    else:
-        # You need to specify the template to render here
-        return render_template('error.html')
+    return render_template('add_prescription.html', doctor=doctor)
 
 
 # get prescription by prescription_id
 @app.route('/view_prescription_to_edit/<prescription_id>/<patient_id>')
 def view_prescription_to_edit(prescription_id, patient_id):
-    # fetch the details of the patient
+    conn = get_db_connection()
     cursor = conn.cursor()
-    sql = 'Select * from prescription where prescription_id = %s'
-    cursor.execute(sql, (prescription_id))
 
-    if cursor.rowcount == 0:
-        flash('Please click on Records Button to get patients records', 'danger')
-        return redirect(url_for('patients'))
-    else:
+    try:
+        cursor.execute('SELECT * FROM prescription WHERE prescription_id = ?', (prescription_id,))
+        if cursor.rowcount == 0:
+            flash('Please click on Records Button to get patients records', 'danger')
+            return redirect(url_for('patients'))
+        
         row = cursor.fetchone()
         return render_template('prescription_update.html', row=row, patient_id=patient_id)
+    except sqlite3.Error as e:
+        flash('An error occurred while accessing the database.', 'danger')
+        return render_template('error.html')
+    finally:
+        conn.close()
 
 
 @app.route('/update_prescription', methods=['POST', 'GET'])
@@ -658,22 +626,24 @@ def update_prescription():
         dosage = request.form['dosage']
         duration = request.form['duration']
 
-        # insert the records into the table
+        conn = get_db_connection()
         cursor = conn.cursor()
         try:
-            sql = "UPDATE `prescription`  SET `medicine` = %s,  `dosage` = %s,  `duration` = %s  where " \
-                  "prescription_id = %s "
-            cursor.execute(sql,
-                           (prescription_name, dosage, duration, prescription_id))
+            cursor.execute('''
+                UPDATE prescription 
+                SET medicine = ?, dosage = ?, duration = ?
+                WHERE prescription_id = ?
+            ''', (prescription_name, dosage, duration, prescription_id))
             conn.commit()
             flash('Prescription Updated Successfully.', 'success')
             return redirect(url_for('prescription', patient_id=patient_idd))
-
-        except:
+        except sqlite3.Error as e:
             flash('Update Failed, Please Try Again.', 'danger')
-            return redirect(url_for('prescription', patient_id=patient_idd))
+            conn.rollback()
+        finally:
+            conn.close()
     else:
-        flash('Please the edit icon to update patient record.', 'info')
+        flash('Please click the edit icon to update patient record.', 'info')
         return redirect(url_for('patients'))
 
 
@@ -711,20 +681,20 @@ def weeks():
         patient_id = request.form['patient_id']
         weeks = request.form['weeks']
 
-        # connect to localhost and db
-
-        # insert the records into table
+        conn = get_db_connection()
         cursor = conn.cursor()
         try:
             cursor.execute(
-                "INSERT INTO `weeks`(`patient_id`, `weeks`) values (%s,%s)", (patient_id, weeks))
+                "INSERT INTO `weeks`(`patient_id`, `weeks`) values (?,?)", (patient_id, weeks))
             conn.commit()
             flash('Record Saved Successfully.', 'success')
             return redirect(url_for('patients'))
 
-        except:
+        except sqlite3.Error as e:
             flash('Error Occurred During Recording.', 'danger')
             return redirect(url_for('patients'))
+        finally:
+            conn.close()
 
     else:
         return render_template('add_healthresults.html')
@@ -734,7 +704,7 @@ def weeks():
 def change_profile():
     if 'key' in session:
         email = session['key']
-
+        conn = get_db_connection()
         cursor = conn.cursor()
         sql = 'Select * from users where email = %s'
         cursor.execute(sql, (email,))
@@ -750,7 +720,7 @@ def update_details():
         email = session['key']
         if request.method == "POST":
             phone = request.form['phone']
-
+            conn = get_db_connection()
             cursor = conn.cursor()
             try:
                 sql = "UPDATE `users`  SET `phone` = %s  where " \
@@ -776,7 +746,7 @@ def update_details():
 def view_profile():
     if 'key' in session:
         email = session['key']
-
+        conn = get_db_connection()
         cursor = conn.cursor()
         sql = 'Select * from users where email = %s'
         cursor.execute(sql, (email,))
@@ -801,127 +771,113 @@ def save_plot(x, y, xlabel, ylabel, title, filepath):
     y.set_title(title)
     x.savefig(filepath)
 
-@app.route('/predict', methods=['POST', 'GET'])
+@app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    cursor = conn.cursor()
-    if 'key' not in session:
+    if 'user_id' not in session:
         flash('Please log in to access this page.', 'info')
         return redirect(url_for('login'))
 
-    u_email = session['key']
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-    # Fetch doctor information
     try:
-        query = "SELECT * FROM users WHERE email = %s"
-        cursor.execute(query, (u_email,))
+        # Fetch doctor information
+        cursor.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],))
         doctor = cursor.fetchone()
-        print(doctor[1])  # Debugging purposes
+
+        if request.method == 'POST':
+            # Get form data
+            patient_id = request.form.get('patient_id')
+            weight = float(request.form.get('weight', 0))
+            height = float(request.form.get('height', 0))
+            heart_rate = int(request.form.get('heart_rate', 0))
+            temperature = float(request.form.get('temperature', 0))
+            systolic = int(request.form.get('systolic', 0))
+            diastolic = int(request.form.get('diastolic', 0))
+            weeks = int(request.form.get('weeks', 0))
+
+            # Calculate BMI
+            height_m = height / 100
+            bmi = weight / (height_m * height_m)
+
+            # Store test data
+            cursor.execute('''
+                INSERT INTO tests (patient_id, weight, height, heart_rate, temperature, systolic, diastolic)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (patient_id, weight, height, heart_rate, temperature, systolic, diastolic))
+            conn.commit()
+
+            # Store weeks data
+            cursor.execute('''
+                INSERT INTO weeks (patient_id, weeks)
+                VALUES (?, ?)
+            ''', (patient_id, weeks))
+            conn.commit()
+
+            # Prepare data for prediction
+            data = {
+                'weight': weight,
+                'height': height,
+                'bmi': bmi,
+                'heart_rate': heart_rate,
+                'temperature': temperature,
+                'systolic': systolic,
+                'diastolic': diastolic,
+                'weeks': weeks
+            }
+
+            # Make prediction using your model
+            prediction = predict_preeclampsia(data)
+
+            return render_template('prediction_result.html', 
+                                 prediction=prediction, 
+                                 data=data,
+                                 doctor=doctor)
+
+        # For GET request, show the prediction form
+        cursor.execute('SELECT * FROM patients ORDER BY date_created DESC')
+        patients = cursor.fetchall()
+        return render_template('predict.html', patients=patients, doctor=doctor)
+
     except sqlite3.Error as e:
-        flash('An error occurred while fetching doctor information.', 'danger')
-        print("Error fetching doctor information:", e)
+        flash('An error occurred while accessing the database.', 'danger')
+        print("Database error:", e)
         return render_template('error.html')
+    finally:
+        conn.close()
 
-    if request.method == "POST":
-        weight = float(request.form['weight'])
-        height = float(request.form['height'])
-        heart_rate = float(request.form['heart_rate'])
-        temperature = float(request.form['temperature'])
-        age = int(request.form['age'])
-
-        def from_dob_to_age(born):
-            today = datetime.date.today()
-            return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-
-        from datetime import date
-        import datetime
-
-        from matplotlib import rcParams
-        rcParams.update({'figure.autolayout': True})
-
-        data = pandas.read_sql(
-            "SELECT patients.id, patients.dob, tests.weight, tests.height, tests.heart_rate, "
-            "tests.temperature, tests.systolic, tests.diastolic FROM patients INNER JOIN tests ON patients.id "
-            "= tests.patient_id",
-            conn, parse_dates=['dob']
-        )
-        print(data)
-        data['dob'] = data['dob'].apply(lambda x: from_dob_to_age(x))
-
-        data['systolic'] = data['systolic'].astype(float)
-        data['diastolic'] = data['diastolic'].astype(float)
-        data['weight'] = data['weight'].astype(float)
-        data['height'] = data['height'].astype(float)
-        data['heart_rate'] = data['heart_rate'].astype(float)
-        data['temperature'] = data['temperature'].astype(float)
-
-        def conditions(s):
-            if (s['systolic'] >= 140) or (s['diastolic'] >= 90):
-                return 'High probability of having HDP'
-            else:
-                return 'Less probability of having HDP'
-
-        data['class'] = data.apply(conditions, axis=1)
-        print(data)
-
-        print(data.groupby('class').size())
-
-        print(data.isnull().sum())
-        print(data.dtypes)
-
-        # Step 1: Split to X, Y
-        array = data.values
-        X = array[:, [1, 2, 3, 4, 5]]  # 5 features: age, weight, height, heart_rate, temperature
-        Y = array[:, -1]  # class target
-
-        # Step 2: Train the model
-        from sklearn import model_selection
-        X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, test_size=0.30, random_state=42)
-
-        # Cross validation of models to find out which could perform better
-        models = [
-            ('DTree', DecisionTreeClassifier()),
-            ('Gaussian', GaussianNB()),
-            ('KNN', KNeighborsClassifier()),
-            ('LogisticReg', LogisticRegression(solver='liblinear', multi_class='ovr')),
-            ('Gradient Boosting', GradientBoostingClassifier()),
-            ('Linear Disc', LinearDiscriminantAnalysis())
-        ]
-
-        from sklearn.model_selection import cross_val_score, KFold
-
-        for name, model in models:
-            n_splits = min(10, len(X_train))  # Ensure n_splits does not exceed number of samples
-            kfold = KFold(n_splits=n_splits, random_state=42, shuffle=True)
-            cv_results = cross_val_score(model, X_train, Y_train, cv=kfold, scoring='accuracy')
-            print('Model Name ', name, 'Results', cv_results.mean())
-
-        # Pick GradientBoostingClassifier as it scored higher from the cross-validation
-        model = GradientBoostingClassifier()
-        model.fit(X_train, Y_train)
-
-        # Ask the model to predict 30% test data
-        predictions = model.predict(X_test)
-
-        # Check accuracy
-        from sklearn.metrics import accuracy_score
-        accuracy = accuracy_score(Y_test, predictions)
-        print('Accuracy: ', accuracy)
-
-        from sklearn.metrics import classification_report
-        from sklearn.metrics import confusion_matrix
-        print('Report: ', classification_report(Y_test, predictions))
-        print(confusion_matrix(Y_test, predictions))
-
-        # Provide data from doctor input
-        inputs = [[age, weight, height, heart_rate, temperature]]
-        outcome = model.predict(inputs)[0]  # Predict the outcome
-        print('Prediction ', outcome)
-
-        flash('Prediction Successful', 'success')
-        return render_template('predict.html', Likelihood='Likelihood: ' + outcome, accuracy_score='The accuracy: ' + str(round(accuracy, 2)))
+def predict_preeclampsia(data):
+    # Your prediction logic here
+    # This is a placeholder - replace with your actual model
+    risk_factors = 0
+    
+    # BMI check
+    if data['bmi'] > 30:
+        risk_factors += 1
+    
+    # Blood pressure check
+    if data['systolic'] > 140 or data['diastolic'] > 90:
+        risk_factors += 1
+    
+    # Heart rate check
+    if data['heart_rate'] > 100:
+        risk_factors += 1
+    
+    # Temperature check
+    if data['temperature'] > 37.5:
+        risk_factors += 1
+    
+    # Weeks check
+    if data['weeks'] > 20:
+        risk_factors += 1
+    
+    # Simple risk assessment
+    if risk_factors >= 3:
+        return "High Risk"
+    elif risk_factors >= 1:
+        return "Moderate Risk"
     else:
-        return render_template('predict.html', doctor=doctor)
-
+        return "Low Risk"
 
 @app.after_request
 def add_header(response):
