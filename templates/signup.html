@@ -50,10 +50,11 @@
     <section class="row" style="margin-left:10%;margin-right:10%;">
         <div class="col-md-6">
             <br> <br> <br> <br> <br> <br><br> <br>
-            <img src="https://www.citymed.com.au/wp-content/uploads/2020/02/blog3-1.webp" alt="" class="img-fluid" width="60%">
+            <img src="https://www.citymed.com.au/wp-content/uploads/2020/02/blog3-1.webp" alt="" class="img-fluid"
+                width="60%">
             <h2 style="color: #1E90FF; font-family: 'Varela Round', sans-serif;">SOS MAMAS</h2>
             <p class="text-muted" style="font-family: 'Varela Round', sans-serif;">Welcome to SOS-mamas. This is a
-               monitoring and management system for doctors . It enables you the healthcare giver to provide care
+                monitoring and management system for doctors . It enables you the healthcare giver to provide care
                 for mums to be.</p>
         </div>
 
@@ -66,23 +67,32 @@
             {% endfor %}
             {% endif %}
             {% endwith %}
-            <form action="/signup" method="post" style="border-radius:10px; background:#E0E0E0; padding:2%">
+            <form method="POST" action="{{ url_for('signup') }}">
                 <h6 class="col text-center" style="color: #1E90FF; font-family: 'Montserrat', sans-serif;">OBSTETRICIAN
                     GYNECOLOGIST SIGN UP</h6><br>
                 <div class="input-group">
-                    <input type="text" name="fname" placeholder="First Name" required class="form-control" />
-                    <span class="input-group-addon">-</span>
-                    <input type="text" name="lname" placeholder="Last Name" required class="form-control" />
+                    <input type="text" name="username" placeholder="Username" required class="form-control" />
                 </div><br>
-                <!--                <input type="text" name="fname" placeholder="First Name" required class="form-control"> <br>-->
-                <!--                <input type="text" name="lname" placeholder="Last Name" required class="form-control"><br>-->
-                <input type="email" name="email" placeholder="Email" required class="form-control"><br>
-                <input type="text" name="phone" placeholder="Tel: +2547XXXXXXXX" required class="form-control"
-                    pattern="[+254 0-9]{13}"><br>
-                <input type="text" name="hospital_name" placeholder="Hospital Name" required class="form-control"><br>
-                <input type="text" name="location" placeholder="Location" required class="form-control"><br>
-                <input type="password" name="password" placeholder="Password" required class="form-control"><br>
-                <input type="password" name="confirm" placeholder="Confirm Password" required class="form-control"><br>
+                <div class="input-group">
+                    <input type="email" name="email" placeholder="Email" required class="form-control" />
+                </div><br>
+                <div class="input-group">
+                    <input type="text" name="phone" placeholder="Tel: +2547XXXXXXXX" required class="form-control"
+                        pattern="[+254 0-9]{13}"><br>
+                </div>
+                <div class="input-group">
+                    <input type="text" name="hospital_name" placeholder="Hospital Name" required class="form-control" />
+                </div><br>
+                <div class="input-group">
+                    <input type="text" name="location" placeholder="Location" required class="form-control" />
+                </div><br>
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="Password" required class="form-control" />
+                </div><br>
+                <div class="input-group">
+                    <input type="password" name="confirm" placeholder="Confirm Password" required
+                        class="form-control" />
+                </div><br>
                 <input type="submit" class="btn btn-primary text-center; col text-center" value="Register">
             </form>
             <a href="/login" style="font-family: 'Varela Round', sans-serif;">Already have an Account? Log in</a><br>

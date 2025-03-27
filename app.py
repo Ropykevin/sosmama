@@ -3,7 +3,7 @@ from matplotlib import rcParams
 from flask import Flask, render_template
 from flask import Flask, render_template, session, flash, redirect, url_for
 from flask import request
-import psycopg2
+import sqlite3
 import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -34,11 +34,95 @@ app = Flask(__name__)
 
 # create a secret key used in encrypting the sessions for security
 app.secret_key = "Wdg@#$%89jMfh2879mT"
-conn = psycopg2.connect(host="localhost", user="postgres",
-                        password="Kevin254!", dbname="sosmama")
 
-cursor = conn.cursor()
+# SQLite database connection
+def get_db_connection():
+    conn = sqlite3.connect('sosmama.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
+# Initialize database
+def init_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Create users table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        phone TEXT,
+        hospital_name TEXT,
+        location TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    # Create patients table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS patients (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_number TEXT UNIQUE NOT NULL,
+        fname TEXT NOT NULL,
+        lname TEXT NOT NULL,
+        email TEXT,
+        phone TEXT,
+        next_of_kin_name TEXT,
+        next_of_kin_phone TEXT,
+        dob DATE,
+        subcounty TEXT,
+        county TEXT,
+        date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    # Create tests table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS tests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        weight REAL,
+        height REAL,
+        heart_rate INTEGER,
+        temperature REAL,
+        systolic INTEGER,
+        diastolic INTEGER,
+        test_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (patient_id) REFERENCES patients (id)
+    )
+    ''')
+    
+    # Create prescription table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS prescription (
+        prescription_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        medicine TEXT NOT NULL,
+        dosage TEXT,
+        duration TEXT,
+        date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (patient_id) REFERENCES patients (id)
+    )
+    ''')
+    
+    # Create weeks table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS weeks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        weeks INTEGER,
+        date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (patient_id) REFERENCES patients (id)
+    )
+    ''')
+    
+    conn.commit()
+    conn.close()
+
+# Initialize the database when the app starts
+init_db()
 
 # This function receives a password as a parameter
 # its hashes and salts using sha512 encoding
@@ -72,164 +156,113 @@ def index():
 
 
 # Login.html route
-@app.route('/login', methods=['POST', 'GET'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
-        email = request.form['email']
+    if request.method == 'POST':
+        username = request.form['username']
         password = request.form['password']
 
-        # connect to localhost and db
-
-        # insert the records into the users tables
+        conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        try:
+            cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+            user = cursor.fetchone()
+            conn.close()
 
-        # check if there is a match for the email user provided during login
-        if cursor.rowcount == 1:
-            # takes you to a different route and create a session
-            rows = cursor.fetchone()
-            # get hashed password from db
-            hashed_password = rows[7]
-
-            # Provide the hashed password from database and the password user provided
-            # check if the are same, if so its true
-            status = verify_password(hashed_password, password)
-            if status:
-                # do session here
-                # if password are same,  create a session and proceed to patients list route
-                session['key'] = email
-                from flask import redirect
-                # after successful login, create user session and redirect the user to /checkout
-                return redirect('/patients')
-                # return redirect('/Main')
+            if user and verify_password(user['password'], password):
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                flash('Login successful!', 'success')
+                return redirect(url_for('patients'))
             else:
-                flash(
-                    'The email and password you entered did not match the records. Please double-check and try again.',
-                    'danger')
-                return render_template('login.html')
-        else:
-            flash('This email does not exist in the records.', 'danger')
-            return render_template('login.html')
+                flash('Invalid username or password.', 'danger')
+        except sqlite3.Error as e:
+            flash('An error occurred during login.', 'danger')
+            conn.close()
 
-    else:
-        return render_template('login.html')
+    return render_template('login.html')
 
 
 # signup.html route
-@app.route('/signup', methods=['POST', 'GET'])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if request.method == "POST":
-        fname = request.form['fname']
-        lname = request.form['lname']
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
         email = request.form['email']
         phone = request.form['phone']
         hospital_name = request.form['hospital_name']
-        password = request.form['password']
-        confirm = request.form['confirm']
         location = request.form['location']
-        # check if confirm password and password are same
-        import re  # Regular expression operations
+        confirm = request.form['confirm']
+
+        # Validate password
         if password != confirm:
             flash('Password does not match!', 'danger')
             return render_template('signup.html')
-
-        # check password strength
-        elif len(password) < 8:
+        
+        if len(password) < 8:
             flash('Password must be eight characters long!', 'danger')
             return render_template('signup.html')
 
-        elif not re.search("[a-z]", password):
-            flash('Password must have at least one small letter!', 'danger')
-            return render_template('signup.html')
+        hashed_password = hash_password(password)
 
-        elif not re.search("[A-Z]", password):
-            flash('Password must have at least one capital letter!', 'danger')
-            return render_template('signup.html')
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO users (username, password, email, phone, hospital_name, location)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (username, hashed_password, email, phone, hospital_name, location))
+            conn.commit()
+            flash('Registration successful! Please login.', 'success')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError as e:
+            flash('Username or email already exists.', 'danger')
+        finally:
+            conn.close()
 
-        else:
-            # hash the password
-            # connect to localhost and db
-
-            # insert the records into the users tables
-            # cursor is used to execute the SQl
-            cursor = conn.cursor()
-            try:
-                cursor.execute(
-                    "INSERT INTO users(fname, lname, email, phone, hospital_name, location, password)\
-                    values (%s,%s,%s,%s,%s,%s,%s)",
-                    (fname, lname, email, phone, hospital_name, location, hash_password(password)))
-                conn.commit()  # update the database
-                # from smss import sending
-                # sending(phone)
-                flash('You are successfully registered!', 'success')
-                return render_template('login.html')
-            except:
-                flash('Sorry, something went wrong!', 'danger')
-                return render_template('signup.html')
-
-    else:
-        return render_template('signup.html')
+    return render_template('signup.html')
 
 
 # patients.html route
 @app.route('/patients', methods=['POST', 'GET'])
-@app.route('/patients', methods=['POST', 'GET'])
 def patients():
-    cursor = conn.cursor()
-
-    # Ensure the user is logged in and 'key' exists in the session
-    if 'key' not in session:
+    if 'user_id' not in session:
         flash('Please log in to access this page.', 'info')
         return redirect(url_for('login'))
 
-    u_email = session['key']
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-    # Fetch doctor information
     try:
-        query = "SELECT * FROM users WHERE email = %s"
-        cursor.execute(query, (u_email,))
+        # Fetch doctor information
+        cursor.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],))
         doctor = cursor.fetchone()
-        print(doctor[1])  # Debugging purposes
 
-    except psycopg2.Error as e:
-        flash('An error occurred while fetching doctor information.', 'danger')
-        print("Error fetching doctor information:", e)
-        return render_template('error.html')
-
-    # Handle POST request for patient search
-    if request.method == "POST":
-        phone = request.form['phone']
-
-        try:
-            sql = "SELECT * FROM patients WHERE phone = %s"
-            cursor.execute(sql, (phone,))
+        # Handle POST request for patient search
+        if request.method == "POST":
+            phone = request.form['phone']
+            cursor.execute('SELECT * FROM patients WHERE phone = ?', (phone,))
             rows = cursor.fetchall()
 
             if not rows:
                 flash('No patient found with the provided phone number.', 'info')
-
-        except psycopg2.Error as e:
-            flash('An error occurred while searching for patients.', 'danger')
-            print("Error searching for patients:", e)
-            return render_template('error.html')
-
-        return render_template('patients.html', rows=rows, doctor=doctor)
-
-    # Handle GET request to fetch all patients
-    else:
-        try:
-            cursor.execute("SELECT * FROM patients ORDER BY date_created DESC")
+        else:
+            # Handle GET request to fetch all patients
+            cursor.execute('SELECT * FROM patients ORDER BY date_created DESC')
             rows = cursor.fetchall()
 
             if not rows:
                 flash('No patients in records. Please add patients.', 'info')
 
-        except psycopg2.Error as e:
-            flash('An error occurred while fetching patients.', 'danger')
-            print("Error fetching patients:", e)
-            return render_template('error.html')
-
         return render_template('patients.html', rows=rows, doctor=doctor)
+
+    except sqlite3.Error as e:
+        flash('An error occurred while accessing the database.', 'danger')
+        print("Database error:", e)
+        return render_template('error.html')
+    finally:
+        conn.close()
 
 
 # Add patient button route
@@ -247,28 +280,25 @@ def add():
         dob = request.form['dob']
         county = request.form['county']
 
-        # insert the records into the users tables
+        conn = get_db_connection()
         cursor = conn.cursor()
         try:
-            cursor.execute("INSERT INTO patients(id_number, fname, lname, email, phone,\
-                           next_of_kin_name, next_of_kin_phone, dob, subcounty,county) values (%s,%s,%s,\
-                           %s,%s,%s,\
-                           %s,%s,%s, %s)", (id_number, fname, lname, email, phone, next_of_kin_name, next_of_kin_phone,
-                                            dob, subcounty, county))
+            cursor.execute('''
+                INSERT INTO patients (id_number, fname, lname, email, phone,
+                next_of_kin_name, next_of_kin_phone, dob, subcounty, county)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (id_number, fname, lname, email, phone, next_of_kin_name, 
+                 next_of_kin_phone, dob, subcounty, county))
             conn.commit()
-            # from smss import sending_patient
-            rowid = cursor.lastrowid
-            print(rowid)
-            # sending_patient(phone, id_number, fname, rowid)
             flash('Record Saved Successfully.', 'success')
             return redirect(url_for('patients'))
-        except:
+        except sqlite3.IntegrityError as e:
             flash('Sorry, an error occurred during Registration, ID number or telephone is already used.', 'danger')
             conn.rollback()
-            return redirect(url_for('patients'))
+        finally:
+            conn.close()
 
-    else:
-        return redirect('/patients')
+    return redirect(url_for('patients'))
 
 
 # provide the patient id to update
@@ -339,7 +369,7 @@ def test(patient_id):
         doctor = cursor.fetchone()
         print(doctor[1])  # Debugging purposes
 
-    except psycopg2.Error as e:
+    except sqlite3.Error as e:
         flash('An error occurred while fetching doctor information.', 'danger')
         print("Error fetching doctor information:", e)
         return render_template('error.html')
@@ -365,7 +395,7 @@ def add_healthresults():
             conn.commit()
             flash('Record Saved Successfully.', 'success')
             return redirect(url_for('patients'))
-        except psycopg2.Error as e:
+        except sqlite3.Error as e:
             flash(f'An Error Occurred During Recording. {e}', 'danger')
             print(e)
             conn.rollback()
@@ -391,7 +421,7 @@ def individual_analysis(id):
         doctor = cursor.fetchone()
         print(doctor[1])  # Debugging purposes
 
-    except psycopg2.Error as e:
+    except sqlite3.Error as e:
         flash('An error occurred while fetching doctor information.', 'danger')
         print("Error fetching doctor information:", e)
         return render_template('error.html')
@@ -448,7 +478,7 @@ def individual_analysis(id):
     #     doctor = cursor.fetchone()
     #     print(doctor[1])  # Debugging purposes
 
-    # except psycopg2.Error as e:
+    # except sqlite3.Error as e:
     #     flash('An error occurred while fetching doctor information.', 'danger')
     #     print("Error fetching doctor information:", e)
     #     return render_template('error.html')
@@ -480,7 +510,7 @@ def prescription(patient_id):
         doctor = cursor.fetchone()
         print(doctor[1])  # Debugging purposes
 
-    except psycopg2.Error as e:
+    except sqlite3.Error as e:
         flash('An error occurred while fetching doctor information.', 'danger')
         print("Error fetching doctor information:", e)
         return render_template('error.html')
@@ -574,7 +604,7 @@ def add_prescription():
         doctor = cursor.fetchone()
         print(doctor[1])  # Debugging purposes
 
-    except psycopg2.Error as e:
+    except sqlite3.Error as e:
         flash('An error occurred while fetching doctor information.', 'danger')
         print("Error fetching doctor information:", e)
         return render_template('error.html')
@@ -593,7 +623,7 @@ def add_prescription():
             flash('Prescription Saved Successfully', 'success')
             return redirect(url_for('prescription', patient_id=patient_id))
 
-        except psycopg2.Error as e:
+        except sqlite3.Error as e:
             flash('Error Occurred During Recording', 'danger')
             print("Error inserting prescription:", e)
             return redirect(url_for('patients', patient_id=patient_id))
@@ -670,9 +700,9 @@ def alert(patient_phone):
 
 @app.route('/logout')
 def logout():
-    session.pop('key', None)
-    from flask import redirect
-    return redirect('/')
+    session.clear()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
 
 
 @app.route('/weeks', methods=['POST', 'GET'])
@@ -786,7 +816,7 @@ def predict():
         cursor.execute(query, (u_email,))
         doctor = cursor.fetchone()
         print(doctor[1])  # Debugging purposes
-    except psycopg2.Error as e:
+    except sqlite3.Error as e:
         flash('An error occurred while fetching doctor information.', 'danger')
         print("Error fetching doctor information:", e)
         return render_template('error.html')
