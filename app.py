@@ -307,7 +307,7 @@ def add():
 @app.route('/retrieve_patient_to_update/<patient_id>', methods=['POST', 'GET'])
 def retrieve_patient_to_update(patient_id):
     # fetch the details of the patient
-
+    conn = get_db_connection()
     cursor = conn.cursor()
     sql = 'Select * from patients where patient_id = %s'
     cursor.execute(sql, patient_id)
