@@ -800,6 +800,8 @@ def predict():
             height_m = height / 100
             bmi = weight / (height_m * height_m)
 
+            conn = get_db_connection()
+            cursor = conn.cursor()
             # Store test data
             cursor.execute('''
                 INSERT INTO tests (patient_id, weight, height, heart_rate, temperature, systolic, diastolic)
