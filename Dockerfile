@@ -2,7 +2,7 @@
 FROM tiangolo/uwsgi-nginx-flask:python3.10
 
 # Set working directory inside the container
-WORKDIR /app
+WORKDIR /sosmama
 
 # Copy requirements file
 COPY requirements.txt /tmp/
