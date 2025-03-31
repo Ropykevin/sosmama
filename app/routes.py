@@ -27,6 +27,7 @@ import warnings
 from sklearn.exceptions import FitFailedWarning
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import pandas
+from flask import Blueprint
 
 # flask object takes the the name of the application, assign app to flask class,to identify current module being
 # parsed to flask
@@ -149,14 +150,16 @@ def verify_password(hashed_password, provided_password):
     return pwdhash == hashed_password
 
 
-@app.route('/')
-@app.route('/index')
+bp = Blueprint('main', __name__)
+
+@bp.route('/')
+@bp.route('/index')
 def index():
     return render_template('index.html')
 
 
 # Login.html route
-@app.route('/login', methods=['GET', 'POST'])
+@bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
@@ -184,7 +187,7 @@ def login():
 
 
 # signup.html route
-@app.route('/signup', methods=['GET', 'POST'])
+@bp.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         username = request.form['username']
@@ -225,7 +228,7 @@ def signup():
 
 
 # patients.html route
-@app.route('/patients', methods=['POST', 'GET'])
+@bp.route('/patients', methods=['POST', 'GET'])
 def patients():
     if 'user_id' not in session:
         flash('Please log in to access this page.', 'info')
@@ -266,7 +269,7 @@ def patients():
 
 
 # Add patient button route
-@app.route('/add', methods=['POST', 'GET'])
+@bp.route('/add', methods=['POST', 'GET'])
 def add():
     if request.method == "POST":
         fname = request.form['fname']
@@ -304,7 +307,7 @@ def add():
 # provide the patient id to update
 # provide the patient id to retrieve the patient record
 # patient_update.html route
-@app.route('/retrieve_patient_to_update/<patient_id>', methods=['POST', 'GET'])
+@bp.route('/retrieve_patient_to_update/<patient_id>', methods=['POST', 'GET'])
 def retrieve_patient_to_update(patient_id):
     # fetch the details of the patient
     conn = get_db_connection()
@@ -321,7 +324,7 @@ def retrieve_patient_to_update(patient_id):
         return render_template('patient_update.html', row=row)
 
 
-@app.route('/update_patient', methods=['POST', 'GET'])
+@bp.route('/update_patient', methods=['POST', 'GET'])
 def update_patient():
     if request.method == "POST":
         patient_id = request.form['patient_id']
@@ -355,7 +358,7 @@ def update_patient():
         return redirect(url_for('patients'))
 
 
-@app.route('/test/<patient_id>')
+@bp.route('/test/<patient_id>')
 def test(patient_id):
     if 'key' not in session:
         flash('Please log in to access this page.', 'info')
@@ -378,7 +381,7 @@ def test(patient_id):
     return render_template('add_healthresults.html', patient_id=patient_id, doctor=doctor)
 
 
-@app.route('/add_healthresults', methods=['POST', 'GET'])
+@bp.route('/add_healthresults', methods=['POST', 'GET'])
 def add_healthresults():
     if request.method == "POST":
         patient_id = request.form['id']
@@ -408,7 +411,7 @@ def add_healthresults():
         return render_template('add_healthresults.html')
 
 
-@app.route('/individual_analysis/<id>')
+@bp.route('/individual_analysis/<id>')
 def individual_analysis(id):
     if 'key' not in session:
         flash('Please log in to access this page.', 'info')
@@ -458,7 +461,7 @@ def individual_analysis(id):
         conn.close()
 
 
-# @app.route('/prescription/')
+# @bp.route('/prescription/')
 # def prescription_list():
     # if 'key' not in session:
     #     flash('Please log in to access this page.', 'info')
@@ -488,7 +491,7 @@ def individual_analysis(id):
 #     return render_template('prescription.html', prescriptions=prescriptions,doctor=doctor)
 
 # view prescription by patient
-@app.route('/prescription/<patient_id>')
+@bp.route('/prescription/<patient_id>')
 def prescription(patient_id):
     if 'key' not in session:
         flash('Please log in to access this page.', 'info')
@@ -559,7 +562,7 @@ def prescription(patient_id):
         conn.close()
 
 
-@app.route('/add_prescription', methods=['POST', 'GET'])
+@bp.route('/add_prescription', methods=['POST', 'GET'])
 def add_prescription():
     if 'key' not in session:
         flash('Please log in to access this page.', 'info')
@@ -597,7 +600,7 @@ def add_prescription():
 
 
 # get prescription by prescription_id
-@app.route('/view_prescription_to_edit/<prescription_id>/<patient_id>')
+@bp.route('/view_prescription_to_edit/<prescription_id>/<patient_id>')
 def view_prescription_to_edit(prescription_id, patient_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -617,7 +620,7 @@ def view_prescription_to_edit(prescription_id, patient_id):
         conn.close()
 
 
-@app.route('/update_prescription', methods=['POST', 'GET'])
+@bp.route('/update_prescription', methods=['POST', 'GET'])
 def update_prescription():
     if request.method == "POST":
         patient_idd = request.form['patient_id']
@@ -647,7 +650,7 @@ def update_prescription():
         return redirect(url_for('patients'))
 
 
-@app.route('/alert/<patient_phone>')
+@bp.route('/alert/<patient_phone>')
 def alert(patient_phone):
     import africastalking
     africastalking.initialize
@@ -668,14 +671,14 @@ def alert(patient_phone):
     return redirect('/patients')
 
 
-@app.route('/logout')
+@bp.route('/logout')
 def logout():
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
 
-@app.route('/weeks', methods=['POST', 'GET'])
+@bp.route('/weeks', methods=['POST', 'GET'])
 def weeks():
     if request.method == "POST":
         patient_id = request.form['patient_id']
@@ -700,7 +703,7 @@ def weeks():
         return render_template('add_healthresults.html')
 
 
-@app.route('/change_profile', methods=['POST', 'GET'])
+@bp.route('/change_profile', methods=['POST', 'GET'])
 def change_profile():
     if 'key' in session:
         email = session['key']
@@ -714,7 +717,7 @@ def change_profile():
         return redirect('/login')
 
 
-@app.route('/update_details', methods=['POST', 'GET'])
+@bp.route('/update_details', methods=['POST', 'GET'])
 def update_details():
     if 'key' in session:
         email = session['key']
@@ -742,7 +745,7 @@ def update_details():
         return redirect('/login')
 
 
-@app.route('/view_profile')
+@bp.route('/view_profile')
 def view_profile():
     if 'key' in session:
         email = session['key']
@@ -771,7 +774,7 @@ def save_plot(x, y, xlabel, ylabel, title, filepath):
     y.set_title(title)
     x.savefig(filepath)
 
-@app.route('/predict', methods=['GET', 'POST'])
+@bp.route('/predict', methods=['GET', 'POST'])
 def predict():
     if 'user_id' not in session:
         flash('Please log in to access this page.', 'info')
@@ -881,7 +884,7 @@ def predict_preeclampsia(data):
     else:
         return "Low Risk"
 
-@app.after_request
+@bp.after_request
 def add_header(response):
     """
     Add headers to both force latest IE rendering engine or Chrome Frame,

@@ -1,26 +1,17 @@
-# Use a base image with uWSGI, Nginx, and Flask
 FROM tiangolo/uwsgi-nginx-flask:python3.10
 
-# Set working directory inside the container
-WORKDIR /sosmama
-
-# Copy requirements file
+# copy over our requirements.txt file
 COPY requirements.txt /tmp/
 
-# Set environment variables
 ENV OAUTHLIB_INSECURE_TRANSPORT=0
 
-# Install dependencies
-RUN pip install --upgrade pip  # Ensure latest pip
+# upgrade pip and install required python packages
+# RUN pip install -U pip
 RUN pip install -r /tmp/requirements.txt
+RUN pip install flask_sqlalchemy
+RUN pip install cryptography
 
-# Copy project files into the container
-COPY . /app
 
-# Expose port 80 (default for Nginx)
-EXPOSE 80
+# copy over our org code
+COPY . .
 
-# Set permissions (if needed)
-RUN chmod -R 755 /app
-
-# Start the app (default CMD from the base image will run uWSGI and Nginx)
