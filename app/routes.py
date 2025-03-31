@@ -650,25 +650,25 @@ def update_prescription():
         return redirect(url_for('patients'))
 
 
-@bp.route('/alert/<patient_phone>')
-def alert(patient_phone):
-    import africastalking
-    africastalking.initialize
+# @bp.route('/alert/<patient_phone>')
+# def alert(patient_phone):
+#     import africastalking
+#     africastalking.initialize
 
-    sms = africastalking.SMS
-    recipients = [patient_phone]
-    message = 'You have a prescription from your doctor, please check your SOS MAMAS app on my prescriptions tab. ' \
-              'Thank you. '
+#     sms = africastalking.SMS
+#     recipients = [patient_phone]
+#     message = 'You have a prescription from your doctor, please check your SOS MAMAS app on my prescriptions tab. ' \
+#               'Thank you. '
 
-    try:
-        response = sms.send(message, recipients)
-        print(response)
-    except Exception as e:
-        print(f'Sorry, something went wrong: ${e}')
+#     try:
+#         response = sms.send(message, recipients)
+#         print(response)
+#     except Exception as e:
+#         print(f'Sorry, something went wrong: ${e}')
 
-    print(f'Sorry, something went wrong: ${e}')
+#     print(f'Sorry, something went wrong: ${e}')
 
-    return redirect('/patients')
+#     return redirect('/patients')
 
 
 @bp.route('/logout')
