@@ -2,16 +2,27 @@ version: '3.8'
 
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
     ports:
       - "5000:5000"
     volumes:
-      - .:/app
-      - sosmama_data:/app/sosmama.db
-    environment:
-      - FLASK_APP=app.py
-      - FLASK_ENV=development
+      - sosmama_data:/app/data  # Store database inside /app/data
+    env_file:
+      - .env  # Load environment variables from .env file
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   sosmama_data:
+    driver: local
