@@ -13,10 +13,8 @@ def create_app():
     db.init_app(app)
 
     
-    # Import routes
+    # Register blueprint
     from app.routes import bp
-
-    from app import routes
     app.register_blueprint(bp)
 
     

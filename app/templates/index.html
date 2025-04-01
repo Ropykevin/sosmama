@@ -105,7 +105,8 @@
         </div>
 
         <div class="col-md-2" style="color: white; padding: 1%;">
-            <a href="/login" style="color: white;">Log in <i class="fa fa-user-circle-o" aria-hidden="true"></i></a>
+            <a href="{{ url_for('main.login') }}" style="color: white;">Login <i class="fa fa-user-circle-o"
+                    aria-hidden="true"></i></a>
         </div>
     </div>
     <br><br><br>
@@ -126,7 +127,7 @@
         </div>
     </section>
     <hr>
- 
+
     <section class="row">
         <div class="col-md-12 text-center">
             <a href="/signup" class="btn btn-primary" id="button">Get Started Here</a>

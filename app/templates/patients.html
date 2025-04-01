@@ -175,7 +175,7 @@
           <td>{{row[10]}}</td>
           <td>{{row[11]}}</td>
 
-          <td><a href="/test/{{row[0]}}" class="btn btn-primary"
+          <td><a href="{{ url_for('main.test', patient_id=row[0]) }}" class="btn btn-primary"
               style="font-family: 'Varela Round', sans-serif;">Test</a></td>
           <td><a href="/individual_analysis/{{row[0]}}" class="btn btn-primary"
               style="font-family: 'Varela Round', sans-serif;">Records</a></td>
@@ -203,7 +203,7 @@
 
         <!-- Modal body -->
         <div class="modal-body" style="border-radius:10px; background:#E0E0E0; padding:2%;">
-          <form action="/add" method="post" class="form-inline">
+          <form action="{{ url_for('main.add') }}" method="post" class="form-inline">
             <div class="row">
               <div class="col-md-12">
                 <input type="text" name="fname" placeholder="First Name" required class="form-control">

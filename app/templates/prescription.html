@@ -147,8 +147,8 @@
           <td>{{row[2]}}</td>
           <td>{{row[3]}}</td>
           <td>{{row[4]}}</td>
-          <td><a href="/view_prescription_to_edit/{{row[0]}}/{{ id}}"><i class="fa fa-pencil-square-o"
-                aria-hidden="true"></i></a></td>
+          <td><a href="{{ url_for('main.view_prescription_to_edit', prescription_id=row[0], patient_id=id) }}"><i
+                class="fa fa-pencil-square-o" aria-hidden="true"></i></a></td>
         </tr>
         {% endfor %}
       </table>
@@ -197,7 +197,8 @@
         </div>
         <!-- Modal body -->
         <div class="modal-body">
-          <form action="/add_prescription" method="post" style="border-radius:10px; background:#E0E0E0; padding:2%">
+          <form action="{{ url_for('main.add_prescription') }}" method="post"
+            style="border-radius:10px; background:#E0E0E0; padding:2%">
             <input type="hidden" name="patient_id" value="{{patient_id}}"> <br>
             <input type="text" name="prescription_name" placeholder="Prescription Name" required
               class="form-control"><br>

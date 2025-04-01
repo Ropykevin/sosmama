@@ -28,6 +28,7 @@ from sklearn.exceptions import FitFailedWarning
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import pandas
 from flask import Blueprint
+from app import db
 
 # flask object takes the the name of the application, assign app to flask class,to identify current module being
 # parsed to flask
